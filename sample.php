@@ -1,9 +1,21 @@
 <?php
+/*
+	Cybersource sample
+	==
+	It took few days trying and testing the cybersource payment, finally paid off.
+	You are eligible to do anything with this code.
+	
+	Author:
+	Didats Triadi <didats@gmail.com>
+	rimbunesia.com
+	
+	October 24th, 2018
+*/
 	require_once("./cybersource.class.php");
 	
-	$secret = "575e33ad39824c84aa98b3051eb2a9793a898270ec694e42b03f6b17bc1bec6a1feb8b32f150473ea4e5ff80f63483c12b3e5639644e49a084e377e121968662536baaea1c98465a92e8744d0f29a61d8064866eb116404da199e6ba9ef81ad149d4999d5e6d4069984c21ecf9e7b4bc8a666982512848dc9109f5151260c7b5";
-	$profile = "4861CC5A-5E57-4854-9EF0-B04755C37454";
-	$access = "3ff35d09a9bd395182509a46553f4906";
+	$secret = "<secret-key>";
+	$profile = "<profile-id>";
+	$access = "<access-key>";
 	
 	// $refNumber, $amount, $currency, $transactionID = uniqid()
 	$ref = time() . "_" . substr(md5(mt_rand(0, mt_getrandmax())), 8, 8);
@@ -15,4 +27,8 @@
 	$cybersource->userEmail = "didats@gmail.com";
 	$cybersource->userFirstName = "Didats";
 	$cybersource->userLastName = "Triadi";
-	$cybersource->pay($ref, 82, "KWD");
+	$cybersource->mdd1 = "MDD1"; // Channel Operation
+	$cybersource->mdd2 = "MDD2"; // Merchant Name
+	$cybersource->mdd3 = "MDD3"; // Category
+	$cybersource->mdd4 = "MDD4"; // Product Name
+	$cybersource->pay($ref, 32, "KWD");

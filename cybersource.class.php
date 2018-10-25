@@ -17,8 +17,9 @@
 		private $secretKey;
 		
 		private $signVariables = "access_key,profile_id,transaction_uuid,signed_field_names,unsigned_field_names,signed_date_time,locale,transaction_type,reference_number,amount,currency";
+		var $unsign = "signature,bill_to_forename,bill_to_surname,bill_to_email,bill_to_address_line1,bill_to_address_city,bill_to_address_country,merchant_descriptor,bill_to_address_line2,bill_to_address_state,bill_to_address_postal_code,bill_to_phone";
 		
-		private $isLive = false;
+		var $isLive = false;
 		
 		// bill_address1, bill_city, bill_country, customer_email, customer_lastname
 		var $userAddress;
@@ -27,6 +28,11 @@
 		var $userEmail;
 		var $userFirstName;
 		var $userLastName;
+		
+		var $mdd1;
+		var $mdd2;
+		var $mdd3;
+		var $mdd4;
 		
 		private $reasonCode = array(
 			0 => "Invalid data sent to cybersource or not complete",
@@ -75,6 +81,11 @@
 				$this->accessKey = $accessKey;
 				$this->profileID = $profileID;
 				$this->secretKey = $secretKey;
+				
+				$this->mdd1 = "";
+				$this->mdd2 = "";
+				$this->mdd3 = "";
+				$this->mdd4 = "";
 			}
 		}
 		
@@ -145,20 +156,42 @@
 				'locale' => $locale,
 				'transaction_uuid' => $transactionID,
 				'signed_field_names' => $this->signVariables,
-				'unsigned_field_names' => "",
+				'unsigned_field_names' => $this->unsign,
 				'signed_date_time' => gmdate("Y-m-d\TH:i:s\Z"),
-				'transaction_type' => "authorization",
+				'transaction_type' => "sale",
 				'reference_number' => $refNumber,
+				'auth_trans_ref_no' => $refNumber,
+				'merchant_descriptor' => "Pixil",
 				'amount' => $amount,
 				'currency' => strtoupper($currency),
-				'bill_city' => $this->userCity,
-				'bill_country' => $this->userCountry,
-				'customer_email' => $this->userEmail,
-				'bill_address1' => $this->userAddress,
-				'customer_firstname' => $this->userFirstName,
-				'customer_lastname' => $this->userLastName
+				'bill_to_address_city' => $this->userCity,
+				'bill_to_address_country' => $this->userCountry,
+				'bill_to_email' => $this->userEmail,
+				'bill_to_address_line1' => $this->userAddress,
+				'bill_to_forename' => $this->userFirstName,
+				'bill_to_surname' => $this->userLastName,
+				'bill_to_address_line2' => "",
+				'bill_to_address_state' => "",
+				'bill_to_address_postal_code' => "",
+				'bill_to_phone' => ""
 			);
-			// bill_address1, bill_city, bill_country, customer_email, customer_lastname
+			
+			if (!empty($this->mdd1)) {
+				$arr['merchant_defined_data1'] = $this->mdd1;
+				$arr['unsigned_field_names'] .= ",merchant_defined_data1";
+			}
+			if (!empty($this->mdd2)) {
+				$arr['merchant_defined_data2'] = $this->mdd2;
+				$arr['unsigned_field_names'] .= ",merchant_defined_data2";
+			}
+			if (!empty($this->mdd3)) {
+				$arr['merchant_defined_data3'] = $this->mdd3;
+				$arr['unsigned_field_names'] .= ",merchant_defined_data3";
+			}
+			if (!empty($this->mdd4)) {
+				$arr['merchant_defined_data4'] = $this->mdd4;
+				$arr['unsigned_field_names'] .= ",merchant_defined_data4";
+			}
 			
 			$signature = $this->sign($arr);
 			
@@ -171,7 +204,7 @@
 			
 			$html .= "</form>";
 			$html .= "<script type='text/javascript'>";
-			$html .= "document.forms[0].submit();";
+			$html .= "setTimeout(function() { document.forms[0].submit(); }, 2000);";
 			$html .= "</script>";
 			$html .= "</body>";
 			echo $html;
@@ -190,6 +223,7 @@
 			$transactionID = $_REQUEST['req_transaction_uuid'];
 			$code = (int)$_REQUEST['decision_reason_code'];
 			$codeMessage = $this->reasonCode[$code];
+			$xml = $_REQUEST['payer_authentication_proof_xml'];
 			
 			return array(
 				'method' => $paymentMethod,
@@ -200,7 +234,8 @@
 				'code' => $code,
 				'message' => $message,
 				'reason' => $codeMessage,
-				'cybersource_transaction' => $cybersourceTransactionID
+				'cybersource_transaction' => $cybersourceTransactionID,
+				'xml' => $xml
 			);
 		}
 	}
